@@ -1,0 +1,2 @@
+#1>. convert current date with a particlar time
+select TO_DATE(TO_CHAR(SYSDATE, 'dd-mon-yyyy') || ' :00:00', 'dd-mon-yyyy hh24:mi:ss') FROM DUAL; 

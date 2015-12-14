@@ -1,0 +1,13 @@
+DECLARE
+   
+   vRes integer;
+   
+BEGIN
+   
+      vRes:=VEH_DISTANCE_HTP('NL01L7077',TO_CHAR(SYSDATE-2,'DD/MM/YYYY')|| ' 00:00:00',TO_CHAR(SYSDATE-1,'DD/MM/YYYY')|| ' 00:00:00');
+
+      dbms_output.put_line(vRes);
+   
+END;
+
+

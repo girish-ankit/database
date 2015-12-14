@@ -1,0 +1,6 @@
+SELECT index_name, column_name, column_position 
+FROM user_ind_columns
+WHERE table_name='MYTABLENAME' 
+ORDER BY index_name, column_position
+
+

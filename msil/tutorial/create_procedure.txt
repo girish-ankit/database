@@ -1,0 +1,5 @@
+create or replace procedure TEMP_HTP
+is
+begin
+null;
+end TEMP_HTP;

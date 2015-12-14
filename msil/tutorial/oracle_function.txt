@@ -1,0 +1,216 @@
+#1>. INITCAP( string1 )
+
+--the Oracle/PLSQL INITCAP function sets the first character in each word to uppercase and the rest to lowercase.
+
+Example:
+
+INITCAP('tech on the net');
+Result: 'Tech On The Net'
+
+#2>. ROUND( number [, decimal_places] )
+
+Parameters or Arguments
+
+-number
+The number to round.
+-decimal_places
+Optional. The number of decimal places rounded to. This value must be an integer. If this parameter is omitted, the ROUND function will round the number to 0 decimal places.
+
+Example:
+
+ROUND(125.315)
+Result: 125
+
+ROUND(125.315, 0)
+Result: 125
+
+ROUND(125.315, 1)
+Result: 125.3
+
+ROUND(125.315, 2)
+Result: 125.32
+
+ROUND(125.315, 3)
+Result: 125.315
+
+ROUND(-125.315, 2)
+Result: -125.32
+
+#3>. DECODE( expression , search , result [, search , result]... [, default] )
+
+Parameters or Arguments
+
+-expression
+The value to compare.
+-search
+The value that is compared against expression.
+-result
+The value returned, if expression is equal to search.
+-default
+Optional. If no matches are found, the DECODE function will return default. If default is omitted, then the DECODE function will return null (if no matches are found).
+
+Example: 
+
+select
+decode (
+region,
+‘N’,’North’,
+‘S’,’South’,
+‘E’,’East’,
+‘W’,’West’,
+‘UNKNOWN’
+)
+from
+customer;
+
+NOTE: we have a column named REGION, with values of N, S, W and E. When we run SQL queries, we want to transform these values into North, South, East and West. Here is how we do this with the decode function.Note that Oracle decode starts by specifying the column name, followed by set of matched-pairs of transformation values. At the end of the decode statement we find a default value. The default value tells decode what to display if a column values is not in the paired list.
+
+#4>. SUBSTR( string, start_position [, length ] )
+--The Oracle/PLSQL SUBSTR functions allows you to extract a substring from a string.
+
+Parameters or Arguments
+
+string
+The source string.
+start_position
+The starting position for extraction. The first position in the string is always 1.
+length
+Optional. It is the number of characters to extract. If this parameter is omitted, the SUBSTR function will return the entire string.
+
+Example:
+
+SUBSTR('This is a test', 6, 2)
+Result: 'is'
+
+SUBSTR('This is a test', 6)
+Result: 'is a test'
+
+SUBSTR('TechOnTheNet', 1, 4)
+Result: 'Tech'
+
+SUBSTR('TechOnTheNet', -3, 3)
+Result: 'Net'
+
+SUBSTR('TechOnTheNet', -6, 3)
+Result: 'The'
+
+SUBSTR('TechOnTheNet', -8, 2)
+Result: 'On'
+
+NOTE:
+If start_position is 0, then the SUBSTR function treats start_position as 1 (ie: the first position in the string).
+If start_position is a positive number, then the SUBSTR function starts from the beginning of the string.
+If start_position is a negative number, then the SUBSTR function starts from the end of the string and counts backwards.
+If length is a negative number, then the SUBSTR function will return a NULL value.
+
+#5>. NVL( string1, replace_with )
+
+-- The Oracle/PLSQL NVL function lets you substitute a value when a null value is encountered.
+
+Example:
+SELECT NVL(supplier_city, 'n/a') FROM suppliers;
+
+#6>. TO_CHAR( value [, format_mask] [, nls_language] )
+--The Oracle/PLSQL TO_CHAR function converts a number or date to a string.
+
+Parameters or Arguments
+
+-value
+A number or date that will be converted to a string.
+-format_mask
+Optional. This is the format that will be used to convert value to a string.
+-nls_language
+Optional. This is the nls language used to convert value to a string.
+
+Example:
+
+>> For number
+
+TO_CHAR(1210.73, '9999.9')
+Result: ' 1210.7'
+
+TO_CHAR(-1210.73, '9999.9')
+Result: '-1210.7'
+
+TO_CHAR(1210.73, '9,999.99')
+Result: ' 1,210.73'
+
+TO_CHAR(1210.73, '$9,999.00')
+Result: ' $1,210.73'
+
+TO_CHAR(21, '000099')
+Result: ' 000021'
+
+ >> for date
+
+TO_CHAR(sysdate, 'yyyy/mm/dd')
+Result: '2003/07/09'
+
+TO_CHAR(sysdate, 'Month DD, YYYY')
+Result: 'July 09, 2003'
+
+TO_CHAR(sysdate, 'FMMonth DD, YYYY')
+Result: 'July 9, 2003'
+
+TO_CHAR(sysdate, 'MON DDth, YYYY')
+Result: 'JUL 09TH, 2003'
+
+TO_CHAR(sysdate, 'FMMON DDth, YYYY')
+Result: 'JUL 9TH, 2003'
+
+TO_CHAR(sysdate, 'FMMon ddth, YYYY')
+Result: 'Jul 9th, 2003'
+
+#8>. TO_DATE( string1 [, format_mask] [, nls_language] )
+
+-- The Oracle/PLSQL TO_DATE function converts a string to a date.
+
+Parameters or Arguments
+
+-string1
+The string that will be converted to a date.
+-format_mask
+Optional. This is the format that will be used to convert string1 to a date. It can be one or a combination of the following values
+
+Example:
+
+TO_DATE('2003/07/09', 'yyyy/mm/dd')
+Result: date value of July 9, 2003
+
+TO_DATE('070903', 'MMDDYY')
+Result: date value of July 9, 2003
+
+TO_DATE('20020315', 'yyyymmdd')
+Result: date value of Mar 15, 2002
+
+#9>. TRUNC ( date [, format ] )
+-- The Oracle/PLSQL TRUNC function returns a date truncated to a specific unit of measure.
+
+NOTE: this function will  return first day date of specified 'formate' parameter.
+
+Run the following query:
+
+SELECT sysdate, TRUNC(sysdate, 'YEAR') firstDayOfYear, TRUNC(sysdate, 'MONTH')firstDayOfMonth, TRUNC(sysdate, 'DAY')firstDayOfWeek, TRUNC(sysdate, 'DDD')todayDate FROM dual;
+
+Parameters or Arguments
+
+-date
+The date to truncate.
+-format
+Optional. The unit of measure to apply for truncating. If the format parameter is omitted, the TRUNC function will truncate the date to the day value, so that any hours, minutes, or seconds will be truncated off. It can be one of the following values:
+
+Example:
+TRUNC(TO_DATE('22-AUG-03'), 'YEAR')
+Result: '01-JAN-03'
+
+TRUNC(TO_DATE('22-AUG-03'), 'Q')
+Result: '01-JUL-03'
+
+TRUNC(TO_DATE('22-AUG-03'), 'MONTH')
+Result: '01-AUG-03'
+
+TRUNC(TO_DATE('22-AUG-03'), 'DDD')
+Result: '22-AUG-03'
+
+TRUNC(TO_DATE('22-AUG-03'), 'DAY')
+Result: '17-AUG-03'

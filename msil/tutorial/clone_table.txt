@@ -1,0 +1,1 @@
+create table MSIL_EDEVSTATUS_L1_HTP as select * from MSIL_EDEVSTATUS_L1;

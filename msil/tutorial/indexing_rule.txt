@@ -1,0 +1,7 @@
+There are some things you should always index:
+
+1>,Primary Keys - these are given an index automatically (unless you specify a suitable existing index for Oracle to use)
+2>.Unique Keys - these are given an index automatically (ditto)
+3>.Foreign Keys - these are not automatically indexed, but you should add one to avoid performance issues when the constraints are checked
+4>.After that, look for other columns that are frequently used to filter queries (specially in WHERE and JOIN )
+5>. A column that has high cardinality (no. of unique records/total number of records) is good candidate for indexing

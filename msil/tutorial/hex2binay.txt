@@ -1,0 +1,45 @@
+CREATE OR REPLACE FUNCTION VOICE_ALERT_CHECK (hexval IN CHAR) RETURN VARCHAR2 AS
+  i                 NUMBER;
+  digits            NUMBER;
+  result_digits     NUMBER;
+  result            VARCHAR(100):='';
+  output            CHAR(1);
+  current_digit     CHAR(1);
+  
+BEGIN
+  digits := LENGTH(hexval);
+  FOR i IN 1..digits LOOP
+     current_digit := SUBSTR(hexval, i, 1);
+  CASE current_digit
+  WHEN '1' THEN result := '0001';
+  WHEN '2' THEN result := '0010';
+  WHEN '3' THEN result := '0011';
+  WHEN '4' THEN result := '0100';
+  WHEN '5' THEN result := '0101';
+  WHEN '6' THEN result := '0110';
+  WHEN '7' THEN result := '0111';
+  WHEN '8' THEN result := '1000';
+  WHEN '9' THEN result := '1001';
+  WHEN 'A' THEN result := '1010';
+  WHEN 'B' THEN result := '1011';
+  WHEN 'C' THEN result := '1100';
+  WHEN 'D' THEN result := '1101';
+  WHEN 'E' THEN result := '1110';
+  WHEN 'F' THEN result := '1111';
+  WHEN 'a' THEN result := '1010';
+  WHEN 'b' THEN result := '1011';
+  WHEN 'c' THEN result := '1100';
+  WHEN 'd' THEN result := '1101';
+  WHEN 'e' THEN result := '1110';
+  WHEN 'f' THEN result := '1111';
+
+END CASE;
+     result := result ||' '||result;
+  END LOOP;
+  result_digits := LENGTH(result);
+  result_digits := result_digits -1;
+  output = SUBSTR(result, result_digits, 1);
+  RETURN result;
+END VOICE_ALERT_CHECK;
+
+

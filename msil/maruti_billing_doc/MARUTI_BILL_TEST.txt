@@ -1,0 +1,207 @@
+#1>. Club Both the billing files (Only the second sheet) into one file and save as CSV.
+   Note: XL provide by client have VEHICLE_NO AND NewInstallation FIELD MUST BE UNIQUE
+
+#2>. Rename the file name as “Upload.csv”
+
+#3>. Client data validation steps:
+
+	a>. copy “Upload.csv” and rename it to test.csv and remove all columns of test.csv except VEHICLE_NO AND NewInstallation then
+	    import csv file to table 'MSIL_BILLING_DATA_TEST'.
+
+	b>. then run following query to check duplicate date:
+	  
+	   i>. for vehicle no:
+	   select VEHICLE_NO, count(VEHICLE_NO) cnt from MSIL_BILLING_DATA_TEST group by VEHICLE_NO order by cnt desc;
+	   
+	   ii>. for NewInstallation (lease no)
+	   select NEWINSTALLATION, count(NEWINSTALLATION) cnt from MSIL_BILLING_DATA_TEST group by NEWINSTALLATION order by cnt desc;
+
+
+
+	c>.  COUNT NO OF VEHICLE
+
+	SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_BILLING_DATA_TEST;
+
+	d>.  CHECK THESE VEHILE ARE AVAILABE IN VEHICLE MASTER TABLE
+
+	SELECT COUNT(EVM_REGN_NO) FROM ETRK_VEHICLE_MST WHERE EVM_REGN_NO  IN (SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA_TEST)
+
+	SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA_TEST WHERE VEHICLE_NO NOT IN (SELECT EVM_REGN_NO FROM ETRK_VEHICLE_MST WHERE EVM_REGN_NO  IN (SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA_TEST));
+
+	>> IF ABOVE QUERY RETURNS NO DATA MEANS ALL VEHICLE NO OF 'MSIL_BILLING_DATA' ARE PRESENT IN 'ETRK_VEHICLE_MST' TABLE;
+
+	e>. CHECK THESE VEHICLE IN  MSIL_LEASE_MST
+
+	SELECT COUNT(VEHICLE_NO) FROM MSIL_LEASE_MST WHERE VEHICLE_NO  IN (SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA_TEST)
+
+	SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA_TEST WHERE VEHICLE_NO NOT IN (SELECT VEHICLE_NO FROM MSIL_LEASE_MST WHERE VEHICLE_NO  IN (SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA_TEST));
+
+	>> IF ABOVE QUERY RETURNS NO DATA MEANS ALL VEHICLE NO OF 'MSIL_BILLING_DATA' ARE PRESENT IN 'MSIL_LEASE_MST' TABLE;
+
+	>> IF IT RETURN DATA THEN YOU HAVE ENTER THESE VALUE  TO 'MSIL_LEASE_MST TABLE'. LIKE FOLLOWING QUERY;
+
+		i>. TRUNCATE TABLE MSIL_LEASE_MST_HTP;
+
+		ii>. DO THIS TASK FIRST IN 'MSIL_LEASE_MST_HTP' TABLE
+
+		 >>>>> NOTE:  SYSDATE-20 column value  MUST BE LESS THAN 15-MM-YYYY DATE FOR PERVIOUYS MONTH >>>>>>>
+
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL02G2571','04020',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL01L9545','04127',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL02G7548','04176',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL01N0512','04179',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL02G7506','04175',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL01L9860','04177',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL01N0514','04178',1,SYSDATE-20,'OL001');
+
+		Insert into MUL.MSIL_LEASE_MST_HTP (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		values ('NL02G3248','04058',1,SYSDATE-20,'OL001');
+
+ 
+		iii>. 
+
+		INSERT INTO MSIL_LEASE_MST (VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE)
+		 
+		  SELECT VEHICLE_NO,LEASE_ID,LEASE_STATUS,LEASE_ACTIVATION_DATE,LEASE_TYPE_CODE FROM MSIL_LEASE_MST_HTP;
+
+		  #>. CHECK DATA IN 'MSIL_VEH_DLY_BILL_STS'  TABLE AFTER RUNNING  PROCEDURE 'MSIL_BILLING_PORTAL_NEW'. RUN FOLLOWING QUEREY;
+
+		  A>. SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_VEH_DLY_BILL_STS 
+		WHERE  TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),   -1) AND (TRUNC(sysdate,'MM') -1) ORDER BY VEHICLE_NO, STATUS_ON;
+
+
+
+#4>. TRUNCATE TABLE MSIL_BILLING_DATA;
+
+#5>. Copy the file to “C:\Automation\UploadBillingData\file” folder under “upload billing data” folder of 10.101.10.39 system.
+
+#6>. Run the batch file(Location: C:\Automation\UploadBillingData)
+
+Note: this batch file insert data into 'MSIL_BILLING_DATA' table;
+
+#7>. Check if the data  is populated in “MSIL_BILLING_DATA” table after completion of batch file execution.
+
+#8>. Execute the stored procedure “MSIL_BILLING_PORTAL_NEW”.
+
+  Note: Above procedure populates 'MSIL_VEH_DLY_BILL_STS' table.
+
+#9>. 9.	Go to “C:\Automation\MonthlyBillGenerator\bin” folder in 10.101.10.39 system and run the batch file under bin folder.
+
+  Note: Above batch file populates table 'MSIL_BILL_VEHWISE_BREAKUP', taking data from 'MSIL_VEH_DLY_BILL_STS' and 'MSIL_LEASE_MST' table base on conditions. 
+
+  Query:
+
+  SELECT DISTINCT BILL.VEHICLE_NO,
+  BILL.DEVICE_ID,
+  MLM.LEASE_TYPE_CODE,
+  BILL.REPORTED_DATE,
+  BILL.VEH_STATUS,
+  BILL.STATUS_ON,
+  BILL.INSTALLED_DATE,
+  BILL.CUST_ID,
+  TO_CHAR(add_months(TRUNC(sysdate, 'MM'), -1),'MON-YYYY') AS BILLING_MONTH,
+  (SELECT STATUS_CODE
+  FROM MSIL_PRIMARY_DEVICE_STATUS
+  WHERE STATUS_TYPE_CODE = VEH_STATUS
+  ) STATUS_CODE
+FROM MSIL_VEH_DLY_BILL_STS BILL,
+  MSIL_LEASE_MST MLM
+WHERE MLM.VEHICLE_NO  = BILL.VEHICLE_NO
+AND Lower(VEH_STATUS)!=Lower('Terminated')
+AND TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1)
+AND MLM.LEASE_ACTIVATION_DATE <= (add_months(TRUNC(sysdate,'MM'), -1)+14 )
+AND MLM.LEASE_STATUS           = 1
+AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  ))
+ORDER BY BILL.VEHICLE_NO,
+  BILL.STATUS_ON;
+
+  Count number of records:
+
+  SELECT COUNT(DISTINCT BILL.VEHICLE_NO) 
+FROM MSIL_VEH_DLY_BILL_STS BILL,
+  MSIL_LEASE_MST MLM
+WHERE MLM.VEHICLE_NO  = BILL.VEHICLE_NO
+AND Lower(VEH_STATUS)!=Lower('Terminated')
+AND TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1)
+AND MLM.LEASE_ACTIVATION_DATE <= (add_months(TRUNC(sysdate,'MM'), -1)+14 )
+AND MLM.LEASE_STATUS           = 1
+AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  ));
+
+#10>. UPDATE MESSAGE FLASH ON BILLING:
+
+ a>.
+
+ SELECT * FROM ETRK_MESSAGINGS WHERE MESSAGE LIKE '%Monthly Bill and kindly confirm%' ORDER BY SENT_DATE DESC;
+
+ SELECT * FROM ETRK_MESSAGINGS WHERE MESSAGE LIKE '%Monthly Bill and kindly confirm%' AND MESSAGE_TO='mulqcg';
+ 
+ SELECT * FROM ETRK_MESSAGINGS WHERE MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 15-08-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.' ORDER BY SENT_DATE DESC;
+
+ b>.
+ SELECT COUNT(*) FROM ETRK_MESSAGINGS WHERE MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 15-08-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.' ORDER BY SENT_DATE DESC;
+
+
+>>> QUERY TO REPLACE
+
+UPDATE ETRK_MESSAGINGS 
+SET  MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 08-10-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.' 
+WHERE  MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 09-09-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.'
+
+>>> then MUST COMMIT 
+
+COMMIT;
+
+#11>. Login to efkonsuzuki.com and paste the url http://www.efkonsuzuki.com/bill/monthlyBill.action in browser and check the values are getting tally with your billing files.
+
+#12>. If the values are getting tallied Then change “MSMM_ISACTIVE” to 1 in “MSIL_SUB_MENU_MST” table this will enable the monthly billing link under the menu.
+
+
+
+VERY IMPORTANT CONCENT, FOLLOWING QUERY MUST HAVE SAME RECORDS:
+
+###>. SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_BILLING_DATA;
+
+###>. SELECT COUNT(DISTINCT BILL.VEHICLE_NO) 
+FROM MSIL_VEH_DLY_BILL_STS BILL,
+  MSIL_LEASE_MST MLM
+WHERE MLM.VEHICLE_NO  = BILL.VEHICLE_NO
+AND Lower(VEH_STATUS)!=Lower('Terminated')
+AND TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1)
+AND MLM.LEASE_ACTIVATION_DATE <= (add_months(TRUNC(sysdate,'MM'), -1)+14 )
+AND MLM.LEASE_STATUS           = 1
+AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  ));
+
+  ###>.
+  SELECT COUNT(VEHICLE_NUMBER) FROM MSIL_BILL_VEHWISE_BREAKUP 
+WHERE BILL_MONTH=To_Char(add_months(trunc(sysdate, 'MM'), -1),'MON-YYYY');
+
+###>. WEB REPORTS DATA TAKE DATA FROM 'MSIL_BILL_VEHWISE_BREAKUP' TABLE;

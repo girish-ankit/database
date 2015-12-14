@@ -1,0 +1,14 @@
+# Following code check query that is running for more than 60 mins
+
+
+
+SELECT t.inst_id,s.username, s.sid, s.serial#, to_char(s.logon_time,'dd-mm-yy hh24:mi:ss')"Logon Time",
+ROUND((SYSDATE-LOGON_TIME)*(24*60),1) as MINUTES_LOGGED_ON,
+ROUND(s.LAST_CALL_ET/60,1) as Minutes_FOR_CURRENT_SQL,t.sql_id,t.sql_text "Last SQL",s.sql_hash_value,t.hash_value
+FROM gv$session s, gv$sqlarea t
+WHERE s.sql_address =t.address AND
+s.sql_hash_value =t.hash_value
+
+AND s.STATUS='ACTIVE'
+AND s.username IS NOT NULL and ROUND((SYSDATE-LOGON_TIME)*(24*60),1) > 60
+ORDER BY MINUTES_LOGGED_ON DESC;

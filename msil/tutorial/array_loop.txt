@@ -1,0 +1,21 @@
+DECLARE
+   type vehiclenoarray IS VARRAY(7) OF VARCHAR2(15);
+   vehicleno vehiclenoarray;
+   vRes integer;
+   total integer;
+   
+BEGIN
+   vehicleno := vehiclenoarray('NL01L7077', 'RJ14GB4875', 'RJ14GC3193', 'HR55M7596', 'RJ14GD0935', 'NL01L7078', 'RJ14GB9582');
+   total := vehicleno.count;
+      
+   dbms_output.put_line('serialNo' || 'vehicleNo'|| 'FunctionOutput');
+   FOR i in 1 .. total LOOP
+      --vRes:=ELOG_PK_VEH_STATUS.VEH_DISTANCE(vehicleno(i),TO_CHAR(SYSDATE-2,'DD/MM/YYYY')|| ' 00:00:00',TO_CHAR(SYSDATE-1,'DD/MM/YYYY')|| ' 00:00:00');
+      vRes:=VEH_DISTANCE_HTP(vehicleno(i),TO_CHAR(SYSDATE-2,'DD/MM/YYYY')|| ' 00:00:00',TO_CHAR(SYSDATE-1,'DD/MM/YYYY')|| ' 00:00:00');
+
+      dbms_output.put_line('Student: ' || vehicleno(i) || ' Function output: ' || vRes);
+   END LOOP;
+END;
+
+
+

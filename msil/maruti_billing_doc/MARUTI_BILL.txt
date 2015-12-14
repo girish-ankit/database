@@ -1,0 +1,152 @@
+Procedure executed begins Current Date/Time : Wed Sep 02 16:17:02 IST 2015
+
+
+#1>. FILE LOCATION: C:\Automation\MonthlyBillGenerator\src\com\efkon\bill
+
+#2>.FILE NAME: VehicleWiseBreakUp.java
+
+#3>.QUERY TO CHECK MISSING VEHICLE ID:
+
+
+SELECT DISTINCT VEHICLE_NO FROM MSIL_VEH_DLY_BILL_STS WHERE VEHICLE_NO NOT IN (SELECT VEHICLE_NUMBER FROM MSIL_BILL_VEHWISE_BREAKUP 
+WHERE BILL_MONTH=To_Char(add_months(trunc(sysdate, 'MM'), -1),'MON-YYYY'));
+
+#4>. QUERY TO CHECK:
+
+SELECT DISTINCT BILL.VEHICLE_NO,
+  BILL.DEVICE_ID,
+  MLM.LEASE_TYPE_CODE,
+  BILL.REPORTED_DATE,
+  BILL.VEH_STATUS,
+  BILL.STATUS_ON,
+  BILL.INSTALLED_DATE,
+  BILL.CUST_ID,
+  TO_CHAR(add_months(TRUNC(sysdate, 'MM'), -1),'MON-YYYY') AS BILLING_MONTH,
+  (SELECT STATUS_CODE
+  FROM MSIL_PRIMARY_DEVICE_STATUS
+  WHERE STATUS_TYPE_CODE = VEH_STATUS
+  ) STATUS_CODE
+FROM MSIL_VEH_DLY_BILL_STS BILL,
+  MSIL_LEASE_MST MLM
+WHERE MLM.VEHICLE_NO  = BILL.VEHICLE_NO
+AND Lower(VEH_STATUS)!=Lower('Terminated')
+AND TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1)
+AND MLM.LEASE_ACTIVATION_DATE <= (add_months(TRUNC(sysdate,'MM'), -1)+14 )
+AND MLM.LEASE_STATUS           = 1
+AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  ))
+ORDER BY BILL.VEHICLE_NO,
+  BILL.STATUS_ON;
+
+
+#5>. CHECK LEASE MASTER TABLE: 
+
+
+SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_LEASE_MST WHERE VEHICLE_NO NOT IN (SELECT DISTINCT VEHICLE_NO FROM MSIL_VEH_DLY_BILL_STS WHERE  TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1));
+
+
+ note: MSIL_LEASE_MST TABLE HAS NOT 97 VEHICLE_NO  THAT ARE PESENT IN MSIL_VEH_DLY_BILL_STS_HTP AND TABLE MSIL_BILL_VEHWISE_BREAKUP IS GENERATOIN BY JONING 
+   THE TWO TABLE AS MENTIONED IN STEP #4 AND FIEL: VehicleWiseBreakUp.java Having LOCATON: C:\Automation\MonthlyBillGenerator\src\com\efkon\bill
+
+   ============> 3/SEP/2015
+#6>.
+   TABLE 'MSIL_BILLING_DATA' HAS 4889 UNIQUE RECOREDS;
+   SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_BILLING_DATA;
+
+   TABLE 'MSIL_VEH_DLY_BILL_STS' HAS 4889 UNIQUE RECOREDS;
+
+   SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_VEH_DLY_BILL_STS WHERE  TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1); 
+
+  >>> BUT IN QUERY #4 WE APPLIED FILTER 
+
+  AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  ))
+
+
+
+  APPLING ABOVE FILTER NUMBER OF DISTINCT RECORED IN  'MSIL_VEH_DLY_BILL_STS' TABLE  IS 4885 NOT 4889
+
+     SELECT COUNT(DISTINCT VEHICLE_NO) FROM MSIL_VEH_DLY_BILL_STS WHERE  TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1)
+     AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  )); 
+
+  >>> 4 VECHILE HAVE 'NULL' VALUE IN 'CUST_ID' COLUMN OF 'MSIL_VEH_DLY_BILL_STS' TABLE. YOU CAN FIND THESE VEHICLE BY APPLYING FOLLOWING QUERY:
+
+  SELECT DISTINCT VEHICLE_NO FROM MSIL_BILLING_DATA WHERE VEHICLE_NO NOT IN (SELECT DISTINCT BILL.VEHICLE_NO
+  
+FROM MSIL_VEH_DLY_BILL_STS BILL,
+  MSIL_LEASE_MST MLM
+WHERE MLM.VEHICLE_NO  = BILL.VEHICLE_NO
+AND Lower(VEH_STATUS)!=Lower('Terminated')
+AND TRUNC(status_on) BETWEEN add_months(TRUNC(sysdate,'MM'),      -1) AND (TRUNC(sysdate,'MM') -1)
+AND MLM.LEASE_ACTIVATION_DATE <= (add_months(TRUNC(sysdate,'MM'), -1)+14 )
+AND MLM.LEASE_STATUS           = 1
+AND (CUST_ID                   ='999'
+OR CUST_ID                    IN
+  (SELECT etsl_customer_code2
+  FROM etrk_shipper_trans_link
+  WHERE etsl_customer_code1 = '999'
+  ))) ;
+
+
+
+  NOTE: FOR THIS MONTH 'NL02D2571', 'MH01L9545', 'NL02D3248', 'HR55M8462' HAVE NOT 'NULL' VALUE IN 'CUST_ID' COLUMN;
+  note: SEE BELOW QUERY:
+
+  SELECT * FROM ETRK_VEHICLE_MST WHERE EVM_REGN_NO IN ('NL02D2571', 'MH01L9545', 'NL02D3248', 'HR55M8462');
+
+  >> THESE VEHICLE ARE NOT PRESERNT IN 'ETRK_VEHICLE_MST' TABLE THAT'S WHY 'CUST_ID' IS 'NULL' IN  'MSIL_VEH_DLY_BILL_STS' TABLE
+
+ #7>. COMPARING XL VERICLE NO WITH OF VERICLE NO MSIL_BILLING_DATA TABLE
+
+ A>. CREATED TABLE MSIL_BILLING_DATA_TEST. THIS TABLE HAS ONLY ONE COLUMN 'VEHICLE_NO';
+
+ RUN FOLLOWING QUERY: 
+
+ SELECT COUNT(*) CNT , VEHICLE_NO FROM MSIL_BILLING_DATA_TEST GROUP BY VEHICLE_NO ORDER BY CNT DESC;
+ 
+ >>> FOLLOWING TABLE HAVE 
+
+ NL02G3206 = 2 (ROW NO: 3972 IN XL 0L001, ROW NO: 3978 IN XL 0L001)
+ NL02G7511 = 2 (ROW NO: 3971 IN XL 0L001, ROW NO: 3977 IN XL 0L001)
+ NL01L9552 = 2 (ROW NO: 3909 IN XL 0L001, ROW NO: 3935 IN XL 0L001)
+ NL02G2558 = 2 (ROW NO: 3970 IN XL 0L001, ROW NO: 3976 IN XL 0L001)
+ NL02G0990 = 2 (ROW NO: 3973 IN XL 0L001, ROW NO: 3979 IN XL 0L001)
+ NL02G1532 = 2 (ROW NO: 3974 IN XL 0L001, ROW NO: 3980 IN XL 0L001)
+
+
+ #8>. UPDATE MESSAGE FLASH ON BILLING:
+
+ a>.
+
+ SELECT * FROM ETRK_MESSAGINGS WHERE MESSAGE LIKE '%Monthly Bill and kindly confirm%' ORDER BY SENT_DATE DESC;
+
+ SELECT * FROM ETRK_MESSAGINGS WHERE MESSAGE LIKE '%Monthly Bill and kindly confirm%' AND MESSAGE_TO='mulqcg';
+ 
+ SELECT * FROM ETRK_MESSAGINGS WHERE MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 15-08-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.' ORDER BY SENT_DATE DESC;
+
+ b>.
+ SELECT COUNT(*) FROM ETRK_MESSAGINGS WHERE MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 15-08-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.' ORDER BY SENT_DATE DESC;
+
+
+>>> QUERY TO REPLACE
+
+UPDATE ETRK_MESSAGINGS 
+SET  MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 08-10-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.' 
+WHERE  MESSAGE = 'Billing portal has been updated with latest bill. Please view your monthly bill Tools --> Monthly Bill and kindly confirm on or before 09-09-2015. For any further clarifications please contact our customer care at Toll Free: 1800 102 5632. Thank you.'
+
+>>> then MUST COMMIT 
+
+COMMIT;

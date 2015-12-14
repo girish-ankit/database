@@ -1,0 +1,12 @@
+FOLLOWING Query will return all tables in which <table name> primary key act's as forign key
+
+select * from user_cons_columns
+where constraint_name in (
+  select constraint_name 
+  from all_constraints
+  where constraint_type='R'
+  and r_constraint_name in 
+    (select constraint_name
+    from all_constraints
+    where constraint_type in ('P','U')
+    and table_name='<table name>'));

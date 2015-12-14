@@ -1,0 +1,10 @@
+
+
+
+select rownum, a.*
+  from ( select *
+           from ETRK_DEVICE_MST
+          where EDM_DEVICE_ID like '%E2V%'
+          order by EDM_DEVICE_ID
+                ) a WHERE a.EDM_DEVICE_INFO='GSM';
+

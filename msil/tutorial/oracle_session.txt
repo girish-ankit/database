@@ -1,0 +1,5 @@
+V$session is the view when you have single instance and GV$session is the view for Real Application Cluster instance
+
+#1>. Get all sesssion count by user name
+
+SELECT USERNAME, count(*) as cnt  FROM V$SESSION GROUP BY USERNAME ORDER BY cnt DESC;
