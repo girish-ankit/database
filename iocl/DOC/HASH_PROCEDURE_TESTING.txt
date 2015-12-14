@@ -1,0 +1,79 @@
+#1>. Server info:
+
+cpu: 24
+ram: 132 GB
+
+cron job: code is in 10.101.10.23 server
+*/5 * * * * /home/app/IOCL_STANDALONE/bin/hash_master.sh >> /home/app/IOCL_STANDALONE/hash_master.txt
+
+#!/bin/sh
+PIDFILE=/tmp/`basename iocl_hash_master`.pid
+if [ -f $PIDFILE ]; then
+  if ps -p `cat $PIDFILE` > /dev/null 2>&1; then
+      echo "IOCL Hash Master is Already running!"
+      exit
+  fi
+fi
+echo $$ > $PIDFILE
+trap 'rm -f "$PIDFILE" >/dev/null 2>&1' EXIT HUP KILL INT QUIT TERM
+cd /home/app/IOCL_STANDALONE/bin/
+/usr/lib/jvm/jre/bin/java -Xms512M -Xmx1028M -cp "../lib/*" com.efkon.iocl.trip.HashMaster 5
+
+
+NOTE: Change parameter in file for hashing: /home/app/IOCL_STANDALONE/bin/hash_master.sh (line no 12)
+
+
+#1>. select * from HTP_EXECUTION_TIME_LOG WHERE PROC_NAME like '%HASH%';
+
+
+#2>. 
+
+a>. for non panjab
+
+SELECT * FROM IOCL_INVOICE_DATA WHERE IID_CREATED_AT > STR_TO_DATE('9/12/2015 23:59:59', '%d/%m/%Y %H:%i:%s')
+AND IID_TRIP_STATUS=2
+
+and IID_VEHICLE_ID not  in (SELECT DISTINCT EVM_VEHICLE_ID FROM ETRK_VEHICLE_MST
+WHERE EVM_ISACTIVE=1 AND EVM_SUPPLY_LOC_ID IN (
+SELECT ESLM_SUPPLY_LOC_ID FROM ETRK_SUPPLY_LOC_MST 
+WHERE UPPER(ESLM_SUPPLY_LOC_STATE) IN (UPPER('Himachal Pradesh'), UPPER('Jammu & Kashmir'), UPPER('Punjab')) AND ESLM_ISACTIVE = 1
+));
+
+ba>. for  panjab
+
+SELECT * FROM IOCL_INVOICE_DATA WHERE IID_CREATED_AT > STR_TO_DATE('9/12/2015 23:59:59', '%d/%m/%Y %H:%i:%s')
+AND IID_TRIP_STATUS=2
+
+and IID_VEHICLE_ID not (SELECT DISTINCT EVM_VEHICLE_ID FROM ETRK_VEHICLE_MST
+WHERE EVM_ISACTIVE=1 AND EVM_SUPPLY_LOC_ID IN (
+SELECT ESLM_SUPPLY_LOC_ID FROM ETRK_SUPPLY_LOC_MST 
+WHERE UPPER(ESLM_SUPPLY_LOC_STATE) IN (UPPER('Himachal Pradesh'), UPPER('Jammu & Kashmir'), UPPER('Punjab')) AND ESLM_ISACTIVE = 1
+));
+
+
+
+
+#3>.
+ps aux | grep -v grep | grep mysqld
+
+USER      PID   %CPU  %MEM    VSZ        RSS      TTY      STAT START   TIME    COMMAND
+root     47566  0.0   0.0     106228     1392      ?        S    15:54   0:00   /bin/sh /usr/bin/mysqld_safe --datadir=/NEWDB/mysqldata/mysql --pid-file=/NEWDB/mysqldata/mysql/iocldb.pid
+mysql    47996  425   59.8    105530956 79087812   ?     Sl      15:54     1142:03     /usr/sbin/mysqld --basedir=/usr --datadir=/NEWDB/mysqldata/mysql --plugin-dir=/usr/lib64/mysql/plugin --user=mysql --log-error=/var/log/mysql/mysql_error.log --pid-file=/NEWDB/mysqldata/mysql/iocldb.pid --socket=/NEWDB/mysqldata/mysql/mysql.sock
+You have mail in /var/spool/mail/root
+
+#4>. 
+ps -f --forest -C mysqld
+
+UID        PID  PPID  C STIME TTY          TIME CMD
+mysql    47996 47566 99 15:54 ?        18:59:02 /usr/sbin/mysqld --basedir=/usr --datadir=/NEWDB/mysqldata/mysql --plugin-dir=/usr/lib64/mysql/plugin --user=mysql --log-error=/var/log/mysql/mysql_error.log --p
+
+#5>.
+ ps -eT 
+PID  SPID TTY          TIME CMD
+
+#6>.
+
+top -H -p 47996
+
+#7>.
+htop

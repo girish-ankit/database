@@ -1,0 +1,5 @@
+SELECT  b.IRM_CONSUMER_NAME, b.IRM_DEPOT_NAME, IRM_ERP_CONSUMER_CODE, count(*) as cnt FROM IOCL_ROUTE_MST b where b.IRM_ROUTE_STATUS= 'ACCEPTED' AND  b.IRM_ERP_CONSUMER_CODE IN (
+select a.IRM_ERP_CONSUMER_CODE from (
+select IRM_ERP_CONSUMER_CODE, count(*) as cnt from IOCL_ROUTE_MST group by IRM_ERP_CONSUMER_CODE having cnt > 1  order by cnt desc
+) a
+)  GROUP by  LOWER(b.IRM_CONSUMER_NAME), b.IRM_DEPOT_NAME   having cnt > 1 ORDER BY cnt desc ;

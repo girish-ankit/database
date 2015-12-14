@@ -1,0 +1,17 @@
+SELECT table_name AS "Table", 
+round(((data_length + index_length) / 1024 / 1024), 2) "Size in MB" 
+FROM information_schema.TABLES 
+WHERE table_schema = "$DB_NAME"
+ AND table_name = "$TABLE_NAME";
+
+
+or this query to list the size of every table in the database, largest first:
+
+SELECT table_name AS "Tables", 
+round(((data_length + index_length) / 1024 / 1024), 2) "Size in MB" 
+FROM information_schema.TABLES 
+WHERE table_schema = "$DB_NAME"
+ORDER BY (data_length + index_length) DESC;
+
+// for IOCL database use  $DB_NAME = iocl
+$TABLE_NAME = table name

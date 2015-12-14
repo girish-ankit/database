@@ -1,0 +1,110 @@
+P: IOCL_PROC_EXCEPTIONS_SCHEDULER_NEW_T
+
+CONDITON: UPPER(IID_IS_SCHDLR_CALLED)='NO' AND IID_IS_RD_PROCESSED=1 
+
+UPDATE IOCL_INVOICE_DATA SET IID_IS_SCHDLR_CALLED='YES' ,IID_IS_RD_PROCESSED=2 WHERE IID_TRIP_ID=CV_TRIP_ID;
+
+=======>		
+                                                                  
+				
+				                      C: C_TRIP_SEARCH ()
+
+						      TABLE: IOCL_INVOICE_DATA
+                                                      CV_VEHICLE_ID =  IID_VEHICLE_ID
+						      CV_DATA_FROM_TIME = IID_TRIP_ACTUAL_START_TIME / IID_INVOICE_DATE
+						      CV_DATA_TO_TIME = IID_TRIP_ACTUAL_END_TIME / IID_TRIP_FORCE_CLOSED_TIME
+
+						      TI:IOCL_EXCEPTIONS_SCHEDULER_NEW
+
+						      TF:IOCL_TEMP_VEH_SPEED_VIOLATION
+
+						      ('SPEED VIOLATION')
+
+						      1).=====================================
+				
+							P: IOCL_PROC_VEH_SPEED_VIOLATION(CV_VEHICLE_ID,DATE_FORMAT(CV_DATA_FROM_TIME,'%d/%m/%Y'),DATE_FORMAT(CV_DATA_TO_TIME,'%d/%m/%Y'),'N');
+
+								
+								TI:IOCL_TEMP_VEH_SPEED_VIOLATION
+
+						                TF:ETRK_IN_MSGS
+
+							2).=================================
+							P: IOCL_PROC_VEH_STOPPAGE(CV_VEHICLE_ID,DATE_FORMAT(CV_DATA_FROM_TIME,'%d/%m/%Y %T'),DATE_FORMAT(CV_DATA_TO_TIME,'%d/%m/%Y %T'),'N');
+
+								IF: vAUTH_DUR IS not NULL THEN
+
+								TI:IOCL_EXCEPTIONS_SCHEDULER_NEW
+
+								TF:IOCL_TEMP_VEH_STOPPAGE_EFK
+
+								ELSE:
+
+								TI:IOCL_EXCEPTIONS_SCHEDULER_NEW
+								TF:IOCL_TEMP_VEH_STOPPAGE
+
+
+								
+
+								======================================
+
+								IF ===> IOCL_PROC_VEH_STOPPAGE_EFK_APP(pVEH_ID,pFROMDATE,pTODATE,pRPT_FOR);
+                                              
+								
+
+								IOCL_PROC_POPULATE_MSGS_OTHER_WM_NEW`(pVEH_ID VARCHAR(50),pFROMDATE VARCHAR(50),pTODATE VARCHAR(50))
+									  TI:IOCL_TEMP_VEH_STOPPAGE_EFK
+
+									  TF: ETRK_IN_MSGS_TEMPMSGS_WM
+
+									 ======================================
+
+										 IOCL_PROC_POPULATE_MSGS_OTHER_WM_NEW`(pVEH_ID VARCHAR(50),pFROMDATE VARCHAR(50),pTODATE VARCHAR(50))
+										  TI:ETRK_IN_MSGS_TEMPMSGS_WM
+
+										  TF: ETRK_IN_MSGS
+
+								ELSE == => 
+
+								IOCL_PROC_VEH_STOPPAGE_APP(pVEH_ID,pFROMDATE,pTODATE,pRPT_FOR);
+
+								                   TI:ETRK_IN_MSGS_TEMPMSGS_WM
+
+										  TF: IOCL_TEMP_VEH_DISTANCE
+
+								 
+                                                              ==================
+							           IOCL_PROC_VEH_DISTANCE(pVEH_ID,pFROMDATE,pTODATE,'N');
+								   TI: IOCL_TEMP_VEH_DISTANCE
+								   TF:ETRK_IN_MSGS_TEMPMSGS
+									   ========================
+									   IOCL_PROC_POPULATE_MSGS_OTHER(pVEH_ID,pFROMDATE,pTODATE);
+									   TI: ETRK_IN_MSGS_TEMPMSGS
+								           TF: ETRK_IN_MSGS
+
+                                                                   IOCL_PROC_POPULATE_MSGS_STOPPAGE_HE(pVEH_ID,pFROMDATE,pTODATE)
+
+								    TI:ETRK_IN_MSGS_TEMPMSGS_STOPPAGE
+
+								    TF: ETRK_IN_MSGS
+
+								
+
+							3). ====================================
+
+							P: IOCL_PROC_ROUTE_DEV_NEW_MAIN  ===>
+											     C: C_VEH_SEARCH
+
+											      TI: IOCL_ROUTE_DEVIATIONS
+											      TF: IOCL_ROUTE_DEVIATIONS_NEW
+
+											      TI: IOCL_EXCEPTIONS_SCHEDULER_NEW
+											      TF: IOCL_ROUTE_DEVIATIONS_NEW 
+											     
+											      CONDITION:  IRD_IS_DONE=0
+
+		                           UPDATE IOCL_ROUTE_DEVIATIONS_NEW SET IRD_IS_DONE=1 WHERE IRD_ID=CV_IRD_ID AND IRD_IS_DONE=0;
+
+###########################################################################################################################################################
+
+INSERT INTO HTP_TEST (`CNT`, `CV_VEHICLE_NO`, `CV_INVOICE_DATE`, `CV_SUPPLY_PLANT_CODE`, `CV_SUPPLY_PLANT`) VALUES (55555, CV_VEHICLE_NO, CV_INVOICE_DATE, CV_SUPPLY_PLANT_CODE,  CV_TRIP_ID);

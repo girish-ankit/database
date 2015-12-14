@@ -1,0 +1,63 @@
+Select distinct                
+EIM_MESSAGE,                
+EIM_MESSAGE_CREATED_TIME,         
+EIM_MESSAGE_TYPE,             
+EIM_LATITUDE,                 
+EIM_LONGITUDE,                
+EIM_DISTANCE,                 
+EIM_CUSTOMER_ID,                
+EIM_VEHICLE_ID,                 
+EIM_DEVICE_ID,                  
+EIM_SIM_NO,                 
+EIM_CELL_NO,                
+EIM_LOCATION,                
+EIM_CITY,                 
+EIM_DISTRICT,                
+EIM_STATE,                 
+EIM_DIRECTION,                 
+EIM_SPEED,                 
+EIM_ACTIVE_TRIP_NO,            
+EIM_TRIP_STATUS,                
+EIM_DESTINATION  FROM ETRK_IN_MSGS
+where eim_vehicle_id=CONVERT(pVEH_ID,char) and eim_message_created_time>=str_to_date(pFROMDATE,'%d/%m/%Y %T')
+and eim_message_created_time<=str_to_date(pTODATE,'%d/%m/%Y %T') AND
+-- (LOWER(SUBSTR(EIM_MESSAGE,instr(EIM_MESSAGE,'GPRMC')+13,1)) LIKE ('a') AND LOWER(SUBSTRING(EIM_MESSAGE,2,1)) = 'q')
+((LOWER(SUBSTR(EIM_MESSAGE,instr(EIM_MESSAGE,'GPRMC')+13,1)) LIKE ('a') AND LOWER(SUBSTRING(EIM_MESSAGE,2,1)) = 'q') OR (SUBSTRING(EIM_MESSAGE,1,1)='$' AND SUBSTRING(EIM_MESSAGE,91,1)='A'))
+ORDER BY eim_message_created_time
+
+===========  FORMATED VERSION
+
+Select distinct                
+EIM_MESSAGE,                
+EIM_MESSAGE_CREATED_TIME,         
+EIM_MESSAGE_TYPE,             
+EIM_LATITUDE,                 
+EIM_LONGITUDE,                
+EIM_DISTANCE,                 
+EIM_CUSTOMER_ID,                
+EIM_VEHICLE_ID,                 
+EIM_DEVICE_ID,                  
+EIM_SIM_NO,                 
+EIM_CELL_NO,                
+EIM_LOCATION,                
+EIM_CITY,                 
+EIM_DISTRICT,                
+EIM_STATE,                 
+EIM_DIRECTION,                 
+EIM_SPEED,                 
+EIM_ACTIVE_TRIP_NO,            
+EIM_TRIP_STATUS,                
+EIM_DESTINATION
+FROM ETRK_IN_MSGS
+WHERE eim_vehicle_id = CONVERT('2564', char)
+AND   eim_message_created_time >= str_to_date('15/10/2015 15:43:34', '%d/%m/%Y %T')
+AND   eim_message_created_time <= str_to_date('15/10/2015 19:02:32', '%d/%m/%Y %T')
+AND  (
+       ( LOWER(SUBSTR(EIM_MESSAGE, instr(EIM_MESSAGE, 'GPRMC') + 13,1)) LIKE ('a') 
+         AND LOWER(SUBSTRING(EIM_MESSAGE, 2, 1)) = 'q'
+       )
+       OR (SUBSTRING(EIM_MESSAGE, 1, 1) = '$'  AND SUBSTRING(EIM_MESSAGE, 91, 1) = 'A')
+       )
+ORDER BY eim_message_created_time;
+
+>>>>>>>>>>>>>>>>> OPTIMIZE THIS QUERY

@@ -1,0 +1,76 @@
+####1>. Important
+
+select curdate(), curtime(), now(), CONCAT(CURDATE(), ' ', CURTIME());
+
+>>>>  now() = CONCAT(CURDATE(), ' ', CURTIME())
+
+
+####2>. Convert sting to date
+
+STR_TO_DATE('21/10/2015 00:00:00', '%d/%m/%Y %H:%i:%s')
+
+
+
+####3>. Change date format:
+
+DATE_FORMAT(Now(), '%d/%m/%Y %h:%i %p')
+
+
+
+####4>. get date range between today and yesterdat
+
+ DATE_ADD(CURDATE(), INTERVAL -1 DAY) >= date_table_field > DATE_ADD(CURDATE(), INTERVAL -0 DAY)
+
+
+
+####5>. The DATE() function extracts the date part of a date or date/time expression
+
+  date(NOW())
+
+#### 6>. get hour and minute and second part of the date
+
+SELECT NOW(), HOUR(NOW()), MINUTE(NOW()), SECOND(NOW());
+
+####6>. SUBDATE( date, INTERVAL value unit ) OR SUBDATE( date, days )
+
+>> Parameters or Arguments
+
+date: The date to which the interval should be subtracted.
+days: The number of days to subtract from date (second syntax).
+value: The value of the time/date interval that you wish to subtract. You can specify positive and negative values for this parameter (first syntax).
+unit: The unit type of the interval such as DAY, MONTH, MINUTE, HOUR, and so on.
+
+example: 
+
+mysql> SELECT SUBDATE('2014-02-13 08:44:21.000001', INTERVAL 4 MICROSECOND);
+Result: '2014-02-13 08:44:20.999997'
+
+mysql> SELECT SUBDATE('2014-02-13 08:44:21', INTERVAL 20 SECOND);
+Result: '2014-02-13 08:44:01'
+
+mysql> SELECT SUBDATE('2014-02-13 08:44:21', INTERVAL 25 MINUTE);
+Result: '2014-02-13 08:19:21'
+
+mysql> SELECT SUBDATE('2014-02-13 08:44:21', INTERVAL 2 HOUR);
+Result: '2014-02-13 06:44:21'
+
+
+mysql> SELECT SUBDATE('2014-02-13', INTERVAL 10 DAY);
+Result: '2014-02-03'
+
+mysql> SELECT SUBDATE('2014-02-13', 10);
+Result: '2014-02-03'
+
+mysql> SELECT SUBDATE('2014-02-13', INTERVAL 12 WEEK);
+Result: '2013-11-21'
+
+mysql> SELECT SUBDATE('2014-02-13', INTERVAL 3 MONTH);
+Result: '2013-11-13'
+
+mysql> SELECT SUBDATE('2014-02-13', INTERVAL 3 QUARTER);
+Result: '2013-05-13'
+
+mysql> SELECT SUBDATE('2014-02-13', INTERVAL 5 YEAR);
+Result: '2009-02-13'
+
+
