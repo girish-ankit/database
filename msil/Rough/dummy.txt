@@ -1,0 +1,49 @@
+MSIl Daywise Distance RPT
+
+SELECT * FROM 
+(
+select vehicle_no,
+(SELECT ECM_CUSTOMER_NAME FROM ETRK_CUSTOMER_MST WHERE ECM_CUSTOMER_ID=CUST_ID) ECM_CUSTOMER_NAME,
+TO_CHAR(SYSDATE,'DD-Mon-YYYY  HH:MI:SS AM')DATE1,
+TO_CHAR(SYSDATE-1,'DD-Mon-YYYY')rpt_month,
+
+case TO_CHAR(SYSDATE-1,'DD')
+WHEN '01' then DAY1   
+WHEN '02' then DAY2   
+WHEN '03' then DAY3   
+WHEN '04' then DAY4  
+WHEN '05' then DAY5   
+WHEN '06' then DAY6   
+WHEN '07' then DAY7  
+WHEN '08' then DAY8 
+WHEN '09' then DAY9  
+WHEN '10' then DAY10   
+WHEN '11' then DAY11  
+WHEN '12' then DAY12 
+WHEN '13' then DAY13  
+WHEN '14' then DAY14  
+WHEN '15' then DAY15  
+WHEN '16' then DAY16 
+WHEN '17' then DAY17  
+WHEN '18' then DAY18  
+WHEN '19' then DAY19  
+WHEN '20' then DAY20 
+WHEN '21' then DAY21  
+WHEN '22' then DAY22  
+WHEN '23' then DAY23  
+WHEN '24' then DAY24  
+WHEN '25' then DAY25  
+WHEN '26' then DAY26  
+WHEN '27' then DAY27  
+WHEN '28' then DAY28  
+WHEN '29' then DAY29  
+WHEN '30' then DAY30  
+WHEN '31' then DAY31
+end OutputValue ,
+
+total_dis 
+from MSIL_DLY_DISTANCE_CAL_TEST
+WHERE CUST_ID='ECUS792'
+)
+WHERE OutputValue <300 and total_dis>9  order by outputvalue ;
+
