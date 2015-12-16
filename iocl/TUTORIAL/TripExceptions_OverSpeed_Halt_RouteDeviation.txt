@@ -1,0 +1,109 @@
+Front End Behaviour
+====================
+https://www.efkonvts.com/trip/consignmentTracking.action
+
+Go to Tracking Menu > consignment Tracking 
+Search for Any State Office and view the result.
+Here, we found halt and deviation count would be zero.
+
+Front End Flow
+====================
+https://www.efkonvts.com/trip/consignmentTracking.action 
+
+Go to Tracking Menu > consignment Tracking 
+
+On find Click ==>  https://www.efkonvts.com/trip/tripSummaryFind.action
+
+<action name="tripSummaryFind" method="tripSummary" class="tripAction">			
+			<result type="json">
+			       <param name="ignoreHierarchy">false</param>
+			</result>
+</action>
+
+
+tripAction.java [method: tripSummary]
+
+tripSummaries = tripService.findAllTripSummary(parameters);
+
+P: IOCL_PROC_TRIP_SUMMARY_REPORT_CONSIGNEE [for user Category Consignee]
+
+P: IOCL_PROC_TRIP_SUMMARY_REPORT_ZONE
+
+Above procedures make use of T: IOCL_EXCEPTIONS_SCHEDULER_NEW for overspeed, halt and route deviation count.
+=========================================================================================================
+
+Question : who populate T: IOCL_EXCEPTIONS_SCHEDULER_NEW ??
+Answer: 
+
+*/1 * * * * /home/app/IOCL_STANDALONE/bin/scheduler.sh >> /home/app/IOCL_STANDALONE/scheduler.txt
+
+Scheduler - scheduler.sh runs every 1 minute
+===========
+com.efkon.iocl.Scheduler IOCL Standalone.
+
+call P:IOCL_PROC_EXCEPTIONS_SCHEDULER_NEW_T creates T:IOCL_EXCEPTIONS_SCHEDULER_NEW
+
+T:IOCL_EXCEPTIONS_SCHEDULER_NEW is effected by three Procedures inside P:IOCL_PROC_EXCEPTIONS_SCHEDULER_NEW_T.
+
+
+for overspeeding
+-----------------
+
+1)	call P:IOCL_PROC_VEH_SPEED_VIOLATION ----> creates T:IOCL_TEMP_VEH_SPEED_VIOLATION
+
+populate T:IOCL_EXCEPTIONS_SCHEDULER_NEW from T:IOCL_TEMP_VEH_SPEED_VIOLATION
+
+
+for halt deviation
+-----------------
+2)	CALL IOCL_PROC_VEH_STOPPAGE ----> creates IOCL_TEMP_VEH_STOPPAGE_EFK
+
+populate IOCL_EXCEPTIONS_SCHEDULER_NEW from IOCL_TEMP_VEH_STOPPAGE for non-efk and IOCL_TEMP_VEH_STOPPAGE_EFK for efk.
+
+
+for route deviation
+-------------------
+3) CALL IOCL_PROC_ROUTE_DEV_NEW_MAIN
+
+Within IOCL_PROC_ROUTE_DEV_NEW_MAIN
+===================================
+create IOCL_ROUTE_DEVIATIONS from IOCL_ROUTE_DEVIATIONS_NEW [JUST A BACKUP]
+
+populate IOCL_EXCEPTIONS_SCHEDULER_NEW from IOCL_ROUTE_DEVIATIONS_NEW
+=========================================================================================================
+Question : who populate T: IOCL_ROUTE_DEVIATIONS_NEW ??
+Answer:
+
+*/2 * * * * /home/app/IOCL_STANDALONE/bin/route_deviation.sh >> /home/app/IOCL_STANDALONE/route_deviation.txt
+
+/IOCLStandalone/src/com/efkon/iocl/trip/ClosedTripRouteDeviation.java
+
+Postgres and MySql both are used.
+
+IOCL_ROUTE_DEVIATIONS_NEW is populated by [route_deviation.sh] i.e ClosedTripRouteDeviation.java, which make use of 
+postgres function [determine_route_deviation] and mysql database.
+==========================================================================================================
+Question : who populate T: IOCL_ALLIDLE_CLOSEDTRIPS ??
+
+*/1 * * * * /home/app/IOCL_STANDALONE/bin/idle_closed_trips.sh >> /home/app/IOCL_STANDALONE/idle_closed_trip.txt
+
+runs every minute
+
+
+============================================================================================================
+
+SUPPLY_PLANT_CODE => ROUTE DEVIATIONS
+0681581728
+0681581488
+
+1863912
+1863749
+
+check procedure first IOCL_PROC_EXCEPTIONS_SCHEDULER_NEW_T
+
+
+SELECT IESN_ID, IESN_IID_TRIP_ID, IESN_CATEGORY, IESN_CREATED_AT 
+FROM iocl.IOCL_EXCEPTIONS_SCHEDULER_NEW where IESN_CATEGORY LIKE '%ROUTE%' order by IESN_CREATED_AT desc;
+
+
+SELECT COUNT(*) FROM IOCL_EXCEPTIONS_SCHEDULER_NEW WHERE IESN_IID_TRIP_ID='0681576737' AND UPPER(IESN_CATEGORY) LIKE '%ROUTE%';
